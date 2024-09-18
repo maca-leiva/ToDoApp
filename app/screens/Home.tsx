@@ -1,37 +1,43 @@
-import React, {useState} from 'react';
-import {
-  StyleSheet,
-  View,
-  Image,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
-
+import React, {useEffect, useState} from 'react';
+import {StyleSheet, View, Image, Text, TouchableOpacity} from 'react-native';
 import {TodoList} from '../components/TodoList';
 import {todosData} from '../data/todos';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
+import {useSelector, useDispatch} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {hideComplitedReducer, setTodosReducer} from '../redux/todosSlice';
 
 function Home(): React.JSX.Element {
-  const [localData, setLocalData] = useState(
-    todosData.sort((a, b) => {
-      return a.isCompleted - b.isCompleted;
-    }),
-  );
+  const todos = useSelector(state => state.todos.todos);
   const [isHidden, setIsHidden] = useState(false);
-  const navigation = useNavigation()
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
 
-  const handleHidePress = () => {
+  useEffect(() => {
+    const getTodos = async () => {
+      try {
+        const todos = await AsyncStorage.getItem('Todos');
+        if (todos !== null) {
+          dispatch(setTodosReducer(JSON.parse(todos)));
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    getTodos();
+  }, []);
+
+  const handleHidePress = async () => {
     if (isHidden) {
       setIsHidden(false);
-      setLocalData(
-        todosData.sort((a, b) => {
-          return a.isCompleted - b.isCompleted;
-        }),
-      );
+      const todos = await AsyncStorage.getItem('Todos');
+      if (todos !== null) {
+        dispatch(setTodosReducer(JSON.parse(todos)));
+      }
       return;
     }
-    setIsHidden(!isHidden);
-    setLocalData(localData.filter(todo => !todo.isCompleted));
+    setIsHidden(true);
+    dispatch(hideComplitedReducer());
   };
 
   return (
@@ -56,11 +62,13 @@ function Home(): React.JSX.Element {
         </TouchableOpacity>
       </View>
 
-      <TodoList todosData={localData.filter(todo => todo.isToday)} />
+      <TodoList todosData={todos.filter(todo => todo.isToday)} />
 
       <Text style={styles.title}>Tomorrow</Text>
-      <TodoList todosData={localData.filter(todo => !todo.isToday)} />
-      <TouchableOpacity onPress={() => navigation.navigate('Add')} style={styles.button}>
+      <TodoList todosData={todos.filter(todo => !todo.isToday)} />
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Add')}
+        style={styles.button}>
         <Text style={styles.plus}>+</Text>
       </TouchableOpacity>
     </View>

@@ -30,7 +30,14 @@ export function Checkbox({id, text, isCompleted, isToday, hour}) {
   };
 
   return isToday ? (
-    <TouchableOpacity onPress={handleCheckbox} style={isCompleted ? styles.checked : styles.unChecked}>
+    <TouchableOpacity
+      onPress={handleCheckbox}
+      style={isCompleted ? styles.checked : styles.unChecked}
+      accessibilityLabel={`Marcar tarea como ${
+        isCompleted ? 'incompleta' : 'completa'
+      }`}
+      accessibilityRole="checkbox"
+      accessibilityState={{checked: isCompleted}}>
       {isCompleted && <Icon name="checkmark-sharp" color={'white'} />}
     </TouchableOpacity>
   ) : (

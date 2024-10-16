@@ -8,6 +8,9 @@ import {deleteTodoReducer} from '../redux/todosSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export function Todo({id, text, isCompleted, isToday, hour}) {
+  const [thisTodoIsToday, setThisTodoIsToday] = hour
+    ? useState(moment(new Date(hour)).isSame(moment(), 'day'))
+    : useState(false);
   const [localHour, setLocalHour] = useState(new Date(hour));
   const dispatch = useDispatch();
   const todos = useSelector(state => state.todos.todos);
@@ -17,9 +20,8 @@ export function Todo({id, text, isCompleted, isToday, hour}) {
     try {
       await AsyncStorage.setItem(
         'Todos',
-        JSON.stringify(todos.filter(todo => todo.id !== id))
+        JSON.stringify(todos.filter(todo => todo.id !== id)),
       );
-      console.log('Todo deleted correctly');
     } catch (e) {
       console.log(e);
     }
@@ -32,7 +34,7 @@ export function Todo({id, text, isCompleted, isToday, hour}) {
           id={id}
           text={text}
           isCompleted={isCompleted}
-          isToday={isToday}
+          isToday={thisTodoIsToday}
           hour={hour}
         />
         <View>
@@ -61,7 +63,10 @@ export function Todo({id, text, isCompleted, isToday, hour}) {
         </View>
       </View>
 
-      <TouchableOpacity onPress={handleDeleteTodo}>
+      <TouchableOpacity
+        onPress={handleDeleteTodo}
+        accessibilityLabel="Eliminar tarea"
+        accessibilityRole="button">
         <Icon name="trash-outline" size={24} color={'black'} />
       </TouchableOpacity>
     </View>

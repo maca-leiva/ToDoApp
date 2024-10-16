@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TextInput,
   Switch,
+  AccessibilityInfo,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {useDispatch, useSelector} from 'react-redux';
@@ -26,7 +27,9 @@ export default function AddTodo() {
     const newTodo = {
       id: Math.floor(Math.random() * 1000000),
       text: name,
-      hour: date.toString(),
+      hour: isToday
+        ? date.toISOString()
+        : new Date(date).getTime() + 24 * 60 * 60 * 1000,
       isToday: isToday,
       isComplited: false,
     };
@@ -36,8 +39,8 @@ export default function AddTodo() {
         JSON.stringify([...listTodos, newTodo]),
       );
       dispatch(addTodoReducer(newTodo));
-      console.log('Todo saved correctly');
       navigation.goBack();
+      AccessibilityInfo.announceForAccessibility('Nueva tarea agregada');
     } catch (e) {
       console.log(e);
     }
@@ -61,13 +64,16 @@ export default function AddTodo() {
           onChangeText={text => {
             setName(text);
           }}
+          accessibilityLabel="Task name input"
         />
       </View>
       <View style={styles.inputContainer}>
         <Text style={styles.inputTitle}>Hour</Text>
         <TouchableOpacity
           onPress={() => setShowPicker(true)}
-          style={styles.dateButton}>
+          style={styles.dateButton}
+          accessibilityLabel="Agregar hora"
+          accessibilityRole="button">
           <Text style={styles.dateText}>
             {date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
           </Text>
@@ -90,9 +96,16 @@ export default function AddTodo() {
           onValueChange={value => {
             setIsToday(value);
           }}
+          accessibilityLabel="Activar tarea para hoy"
+          accessibilityState={{checked: isToday}}
         />
       </View>
-      <TouchableOpacity style={styles.button} onPress={addTodo}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={addTodo}
+        accessible={true}
+        accessibilityLabel="Confirmar creacion de tarea"
+        accessibilityRole="button">
         <Text style={{color: 'white'}}>Done</Text>
       </TouchableOpacity>
       <Text style={{color: '#00000040'}}>

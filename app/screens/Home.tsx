@@ -6,6 +6,7 @@ import {useNavigation} from '@react-navigation/native';
 import {useSelector, useDispatch} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {hideComplitedReducer, setTodosReducer} from '../redux/todosSlice';
+import moment from 'moment';
 
 function Home(): React.JSX.Element {
   const todos = useSelector(state => state.todos.todos);
@@ -18,7 +19,17 @@ function Home(): React.JSX.Element {
       try {
         const todos = await AsyncStorage.getItem('Todos');
         if (todos !== null) {
-          dispatch(setTodosReducer(JSON.parse(todos)));
+          const todosData = JSON.parse(todos);
+          const todosDataFiltered = todosData.filter(todo => {
+            return moment(new Date(todo.hour)).isSameOrAfter(moment(), 'day');
+          });
+          if (todosDataFiltered !== null) {
+            await AsyncStorage.setItem(
+              '@Todos',
+              JSON.stringify(todosDataFiltered),
+            );
+          }
+          dispatch(setTodosReducer(todosDataFiltered));
         }
       } catch (e) {
         console.log(e);
@@ -42,6 +53,7 @@ function Home(): React.JSX.Element {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Lista de tareas</Text>
       <Image
         source={{
           uri: 'https://i.pinimg.com/736x/b1/6c/f3/b16cf30a73e39f9b8819bd9b61ff6b09.jpg',
@@ -62,13 +74,24 @@ function Home(): React.JSX.Element {
         </TouchableOpacity>
       </View>
 
-      <TodoList todosData={todos.filter(todo => todo.isToday)} />
+      <TodoList
+        todosData={todos.filter(todo =>
+          moment(new Date(todo.hour)).isSame(moment(), 'day'),
+        )}
+      />
 
       <Text style={styles.title}>Tomorrow</Text>
-      <TodoList todosData={todos.filter(todo => !todo.isToday)} />
+      <TodoList
+        todosData={todos.filter(todo =>
+          moment(new Date(todo.hour)).isAfter(moment(), 'day'),
+        )}
+      />
       <TouchableOpacity
         onPress={() => navigation.navigate('Add')}
-        style={styles.button}>
+        style={styles.button}
+        accessibilityLabel="Agregar nueva tarea"
+        accessibilityHint="Navegará a la pantalla para agregar una nueva tarea"
+        accessibilityRole="button">
         <Text style={styles.plus}>+</Text>
       </TouchableOpacity>
     </View>
@@ -92,6 +115,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 35,
     marginTop: 10,
+    color: 'black',
   },
   button: {
     width: 42,

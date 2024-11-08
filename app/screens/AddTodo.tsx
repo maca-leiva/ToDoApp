@@ -126,21 +126,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 35,
     marginTop: 10,
+    color: '#646464'
   },
   inputTitle: {
     fontSize: 20,
     fontWeight: '600',
     lineHeight: 24,
+    color: '#646464'
   },
   textInput: {
     borderBottomColor: '#00000030',
     borderBottomWidth: 1,
     width: '80%',
+    color: '#646464'
   },
   inputContainer: {
     justifyContent: 'space-between',
     flexDirection: 'row',
     paddingBottom: 30,
+    color: '#646464'
   },
   button: {
     marginTop: 30,
